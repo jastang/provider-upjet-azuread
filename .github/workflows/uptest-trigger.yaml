@@ -33,14 +33,23 @@ jobs:
           echo "permission=$GRANTED" >> "$GITHUB_OUTPUT"
   
   get-example-list:
-    if: ${{ ( needs.check-permissions.outputs.permission == 'admin' || needs.check-permissions.outputs.permission == 'write' ) && github.event.issue.pull_request && contains(github.event.comment.body, '/test-examples' ) }}
-    runs-on: ubuntu-latest
     needs: check-permissions
+    if: >-
+      (needs.check-permissions.outputs.permission == 'admin' ||
+       needs.check-permissions.outputs.permission == 'write') &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/test-examples')
+    runs-on: ubuntu-latest
     outputs:
       example_list: ${{ steps.get-example-list-name.outputs.example-list }}
       example_hash: ${{ steps.get-example-list-name.outputs.example-hash }}
 
     steps:
+      - name: Debug Variables
+        run: |
+          echo "PERMISSION=${{ needs.check-permissions.outputs.permission }}"
+          echo "IS_PR_COMMENT=${{ github.event.issue.pull_request }}"
+          echo "COMMENT_BODY=${{ github.event.comment.body }}"
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -89,11 +98,15 @@ jobs:
             -f context="Uptest-${{ steps.get-example-list-name.outputs.example-hash }}"
 
   uptest:
-    if: ${{ ( needs.check-permissions.outputs.permission == 'admin' || needs.check-permissions.outputs.permission == 'write' ) && github.event.issue.pull_request && contains(github.event.comment.body, '/test-examples' ) }}
-    runs-on: ubuntu-latest
     needs: 
       - check-permissions
       - get-example-list
+    if: >-
+      (needs.check-permissions.outputs.permission == 'admin' ||
+       needs.check-permissions.outputs.permission == 'write') &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/test-examples')
+    runs-on: ubuntu-latest
     steps:
       - name: Cleanup Disk
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
