@@ -14,8 +14,11 @@ env:
 jobs:
   check-permissions:
     runs-on: ubuntu-latest
+    outputs:
+      permission: ${{ steps.check-permissions.outputs.permission }}
     steps:
       - name: Get Commenter Permissions
+        id: check-permissions
         run: |
           echo "Trigger keyword: '/test-examples'"
           echo "Go version: ${{ env.GO_VERSION }}"
@@ -31,9 +34,6 @@ jobs:
           # Make it accessible in the workflow via a job output -- cannot use env
           echo "User $COMMENTER has $GRANTED permissions"
           echo "permission=$GRANTED" >> "$GITHUB_OUTPUT"
-
-          echo "IS_PR_COMMENT=${{ github.event.issue.pull_request }}"
-          echo "COMMENT_BODY=${{ github.event.comment.body }}"
   
   get-example-list:
     needs: check-permissions
