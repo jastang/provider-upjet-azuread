@@ -31,6 +31,9 @@ jobs:
           # Make it accessible in the workflow via a job output -- cannot use env
           echo "User $COMMENTER has $GRANTED permissions"
           echo "permission=$GRANTED" >> "$GITHUB_OUTPUT"
+
+          echo "IS_PR_COMMENT=${{ github.event.issue.pull_request }}"
+          echo "COMMENT_BODY=${{ github.event.comment.body }}"
   
   get-example-list:
     needs: check-permissions
@@ -45,11 +48,6 @@ jobs:
       example_hash: ${{ steps.get-example-list-name.outputs.example-hash }}
 
     steps:
-      - name: Debug Variables
-        run: |
-          echo "PERMISSION=${{ needs.check-permissions.outputs.permission }}"
-          echo "IS_PR_COMMENT=${{ github.event.issue.pull_request }}"
-          echo "COMMENT_BODY=${{ github.event.comment.body }}"
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
