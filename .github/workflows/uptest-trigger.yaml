@@ -37,13 +37,18 @@ jobs:
   
   get-example-list:
     needs: check-permissions
-    if: ${{ (needs.check-permissions.outputs.permission == 'admin' || needs.check-permissions.outputs.permission == 'write') }}
+    if: ${{ github.event.issue.pull_request != null && contains(github.event.comment.body, '/test-examples')}}
     runs-on: ubuntu-latest
     outputs:
       example_list: ${{ steps.get-example-list-name.outputs.example-list }}
       example_hash: ${{ steps.get-example-list-name.outputs.example-hash }}
 
     steps:
+      - name: Debug
+        run: |
+            echo "PERMISSION=${{ needs.check-permissions.outputs.permission }}"
+            echo "IS_PR_COMMENT=${{ github.event.issue.pull_request }}"
+            echo "COMMENT_BODY=${{ github.event.comment.body }}"
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
